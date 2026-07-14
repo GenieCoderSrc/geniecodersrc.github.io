@@ -334,7 +334,7 @@
       </div>
     </header>
 
-    <div id="loading-status" class="loading-status">Loading live package statistics from Pub.dev...</div>
+    <div id="loading-status" class="loading-status">Crawling paginated GitHub repositories and matching Pub.dev live metrics...</div>
 
     <main class="grid" id="packages-grid">
       </main>
@@ -347,7 +347,7 @@
   <script>
     const USER = 'GenieCoderSrc';
     const MONOREPO = 'pub_package_monorepo';
-    const excludedRepos = [MONOREPO, 'geniecodersrc.github.io', '.github'];
+    const excludedRepos = ['geniecodersrc.github.io', '.github'];
 
     function determineCategory(name) {
       const lowerName = name.toLowerCase();
@@ -365,17 +365,14 @@
       return `<span class="tag tag-util">Utility</span>`;
     }
 
-    // Dynamic metrics integration using Pub.dev proxy endpoint APIs
     async function fetchPubMetrics(packageName) {
       try {
-        // Fetch core data (version, description)
         const infoRes = await fetch(`https://pub.dartlang.org/api/packages/${packageName}`);
-        // Fetch runtime scoring metrics (points, downloads, popularity)
         const scoreRes = await fetch(`https://pub.dartlang.org/api/packages/${packageName}/metrics`);
         
         let version = 'v1.0.0';
         let desc = 'Production ready package tracking modular software principles.';
-        let points = '--/160';
+        let points = '--/140';
         let popularity = '--%';
         let downloads = '0';
 
@@ -390,76 +387,91 @@
           if(scoreData.score) {
             points = `${scoreData.score.grantedPoints}/${scoreData.score.maxPoints}`;
             popularity = `${Math.round(scoreData.score.popularityScore * 100)}%`;
-            // Pull accurate cumulative downloads tracking metric if exposed by api response
-            downloads = scoreData.score.downloadCount != null ? scoreData.score.downloadCount.toLocaleString() : '--';
+            downloads = scoreData.score.downloadCount != null ? scoreData.score.downloadCount.toLocaleString() : '0';
           }
         }
-
-        return { version, desc, points, popularity, downloads };
+        return { version, desc, points, popularity, downloads, isValidPub: infoRes.ok };
       } catch (err) {
-        // Fallback structures if a package hasn't fully propagated to pub.dev registry indexing logs
-        return { version: 'v1.0.0', desc: 'Active development implementation framework.', points: '140/140', popularity: '90%', downloads: '--' };
+        return { version: 'v1.0.0', desc: 'Active implementation module.', points: '--/140', popularity: '--%', downloads: '0', isValidPub: false };
       }
     }
 
     async function loadPublisherPackages() {
       const grid = document.getElementById('packages-grid');
       const status = document.getElementById('loading-status');
-      let rawDataset = [];
+      let discoveredPackages = [];
 
       try {
-        // 1. Scan monorepo directories
+        // 1. Handle Monorepo multi-packages discovery
         const monoResponse = await fetch(`https://api.github.com/repos/${USER}/${MONOREPO}/contents/packages`);
         if (monoResponse.ok) {
           const contents = await monoResponse.json();
           contents.forEach(item => {
             if (item.type === 'dir') {
-              rawDataset.push({
+              discoveredPackages.push({
                 name: item.name,
                 category: determineCategory(item.name),
-                repoUrl: `https://github.com/${USER}/${MONOREPO}/tree/main/packages/${item.name}`,
-                pubUrl: `https://pub.dev/packages/${item.name}`
+                repoUrl: `https://github.com/${USER}/${MONOREPO}/tree/main/packages/${item.name}`
               });
             }
           });
         }
 
-        // 2. Scan independent repositories
-        const reposResponse = await fetch(`https://api.github.com/users/${USER}/repos?per_page=100`);
-        if (reposResponse.ok) {
+        // 2. Loop and crawl all GitHub repository pagination steps dynamically
+        let page = 1;
+        let keepFetching = true;
+
+        while (keepFetching) {
+          const reposResponse = await fetch(`https://api.github.com/users/${USER}/repos?per_page=100&page=${page}`);
+          if (!reposResponse.ok) break;
+          
           const repos = await reposResponse.json();
+          if (repos.length === 0) {
+            keepFetching = false;
+            break;
+          }
+
           repos.forEach(repo => {
-            if (!repo.fork && !excludedRepos.includes(repo.name)) {
-              rawDataset.push({
-                name: repo.name,
-                category: determineCategory(repo.name),
-                repoUrl: repo.html_url,
-                pubUrl: `https://pub.dev/packages/${repo.name}`
-              });
+            if (!repo.fork && !excludedRepos.includes(repo.name) && repo.name !== MONOREPO) {
+              // Ensure we don't map duplicate listings
+              if (!discoveredPackages.some(p => p.name === repo.name)) {
+                discoveredPackages.push({
+                  name: repo.name,
+                  category: determineCategory(repo.name),
+                  repoUrl: repo.html_url
+                });
+              }
             }
           });
+
+          page++;
         }
 
-        rawDataset.sort((a, b) => a.name.localeCompare(b.name));
-
-        if (rawDataset.length === 0) {
-          status.innerText = "No packages detected.";
-          return;
-        }
-
-        // Complete concurrent pub API calls for all packages simultaneously
-        const hydrationPromises = rawDataset.map(async (pkg) => {
+        // 3. Hydrate live metadata from Pub.dev and filter out non-published repos
+        const functionalPromises = discoveredPackages.map(async (pkg) => {
           const metrics = await fetchPubMetrics(pkg.name);
           return { ...pkg, ...metrics };
         });
 
-        const finalizedDataset = await Promise.all(hydrationPromises);
+        const fullyHydrated = await Promise.all(functionalPromises);
+        
+        // Filter out items that are not actual packages on pub.dev (like template projects or websites)
+        const finalizedDataset = fullyHydrated.filter(pkg => pkg.isValidPub);
 
+        // Sort alphabetically
+        finalizedDataset.sort((a, b) => a.name.localeCompare(b.name));
+
+        if (finalizedDataset.length === 0) {
+          status.innerText = "No published items indexed on pub.dev currently.";
+          return;
+        }
+
+        // Render cards layout configuration
         grid.innerHTML = finalizedDataset.map(pkg => `
           <div class="card" data-category="${pkg.category}">
             <div>
               <div class="card-header">
-                <a href="${pkg.pubUrl}" class="pkg-title" target="_blank" rel="noopener noreferrer">${pkg.name}</a>
+                <a href="https://pub.dev/packages/${pkg.name}" class="pkg-title" target="_blank" rel="noopener noreferrer">${pkg.name}</a>
                 <span class="pkg-version">${pkg.version}</span>
               </div>
               <p class="pkg-desc">${pkg.desc}</p>
@@ -482,7 +494,7 @@
                   <svg viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
                   GitHub
                 </a>
-                <a href="${pkg.pubUrl}" class="btn-sm" target="_blank" rel="noopener noreferrer">
+                <a href="https://pub.dev/packages/${pkg.name}" class="btn-sm" target="_blank" rel="noopener noreferrer">
                   pub.dev
                 </a>
               </div>
@@ -493,7 +505,7 @@
         status.style.display = 'none';
 
       } catch (err) {
-        status.innerText = "Error syncing runtime metadata profiles. Please reload.";
+        status.innerText = "Error refreshing real-time pipeline metadata profiles.";
         console.error(err);
       }
     }
