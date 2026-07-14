@@ -1,0 +1,50 @@
+/* ==========================================================
+   HOME PAGE
+   ========================================================== */
+
+.hero{
+
+    padding-top:90px;
+
+    padding-bottom:90px;
+}
+
+.hero h1{
+
+    font-size:56px;
+
+    margin-bottom:12px;
+}
+
+.hero p{
+
+    max-width:720px;
+
+    color:var(--color-text-secondary);
+
+    margin:24px 0;
+}
+
+.hero-buttons{
+
+    display:flex;
+
+    gap:16px;
+
+    flex-wrap:wrap;
+}
+
+/* ==========================================================
+   FEATURED
+   ========================================================== */
+
+.feature-grid{
+
+    display:grid;
+
+    grid-template-columns:
+
+        repeat(auto-fit,minmax(340px,1fr));
+
+    gap:24px;
+}
