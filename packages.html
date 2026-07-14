@@ -342,7 +342,7 @@
     const USER = 'GenieCoderSrc';
     const MONOREPO = 'pub_package_monorepo';
     
-    // Explicit exclusions to remove standard non-package apps entirely
+    // Explicit exclusions to remove standard non-package apps and sites
     const excludedRepos = [
       MONOREPO, 
       'geniecodersrc.github.io', 
@@ -372,33 +372,40 @@
       const status = document.getElementById('loading-status');
       let dataset = [];
 
+      // 1. Try to scan monorepo packages directory (wrapped in an isolated try-catch)
       try {
-        // 1. Scan monorepo packages directory
         const monoResponse = await fetch(`https://api.github.com/repos/${USER}/${MONOREPO}/contents/packages`);
         if (monoResponse.ok) {
           const contents = await monoResponse.json();
-          contents.forEach(item => {
-            if (item.type === 'dir') {
-              const cat = determineCategory(item.name);
-              // Handle underscore translation for links cleanly
-              let cleanPubName = item.name.replaceAll('-', '_');
-              if (item.name === 'navigation_wihout_context') cleanPubName = 'navigation_wihout_context';
+          if (Array.isArray(contents)) {
+            contents.forEach(item => {
+              if (item.type === 'dir') {
+                const cat = determineCategory(item.name);
+                let cleanPubName = item.name.replaceAll('-', '_');
+                if (item.name === 'navigation_wihout_context') cleanPubName = 'navigation_wihout_context';
 
-              dataset.push({
-                name: item.name,
-                version: 'v1.1.0',
-                desc: `Modular structural tool custom tailored for production deployments. Fully manageable within Flutter architectures.`,
-                category: cat,
-                points: '140/140',
-                popularity: '100%',
-                repoUrl: `https://github.com/${USER}/${MONOREPO}/tree/main/packages/${item.name}`,
-                pubUrl: `https://pub.dev/packages/${cleanPubName}`
-              });
-            }
-          });
+                dataset.push({
+                  name: item.name,
+                  version: 'v1.1.0',
+                  desc: `Modular structural tool custom tailored for production deployments. Fully manageable within Flutter architectures.`,
+                  category: cat,
+                  points: '140/140',
+                  popularity: '100%',
+                  repoUrl: `https://github.com/${USER}/${MONOREPO}/tree/main/packages/${item.name}`,
+                  pubUrl: `https://pub.dev/packages/${cleanPubName}`
+                });
+              }
+            });
+          }
         }
+      } catch (monoErr) {
+        // Monorepo does not exist, is private, or has no packages folder.
+        // We log it to the console but don't stop execution.
+        console.warn("Monorepo fetch skipped or unavailable:", monoErr.message);
+      }
 
-        // 2. Scan standalone repositories (Paginates cleanly inside per_page size parameter)
+      // 2. Scan independent repositories (This will run even if Phase 1 failed!)
+      try {
         const reposResponse = await fetch(`https://api.github.com/users/${USER}/repos?per_page=100`);
         if (reposResponse.ok) {
           const repos = await reposResponse.json();
@@ -424,53 +431,51 @@
             }
           });
         }
+      } catch (reposErr) {
+        console.error("Failed to fetch public repositories:", reposErr);
+      }
 
-        // Alphabetically organize final mapping presentation
-        dataset.sort((a, b) => a.name.localeCompare(b.name));
+      // Alphabetically organize final mapping presentation
+      dataset.sort((a, b) => a.name.localeCompare(b.name));
 
-        if (dataset.length === 0) {
-          status.innerText = "No published items detected.";
-          return;
-        }
+      if (dataset.length === 0) {
+        status.innerText = "No public packages detected.";
+        return;
+      }
 
-        // 3. Inject cards directly onto visual DOM elements
-        grid.innerHTML = dataset.map(pkg => `
-          <div class="card" data-category="${pkg.category}">
-            <div>
-              <div class="card-header">
-                <a href="${pkg.pubUrl}" class="pkg-title" target="_blank" rel="noopener noreferrer">${pkg.name}</a>
-                <span class="pkg-version">${pkg.version}</span>
-              </div>
-              <p class="pkg-desc">${pkg.desc}</p>
-              <div class="pkg-meta">
-                ${getMetaTags(pkg.category)}
-              </div>
+      // 3. Inject cards directly onto visual DOM elements
+      grid.innerHTML = dataset.map(pkg => `
+        <div class="card" data-category="${pkg.category}">
+          <div>
+            <div class="card-header">
+              <a href="${pkg.pubUrl}" class="pkg-title" target="_blank" rel="noopener noreferrer">${pkg.name}</a>
+              <span class="pkg-version">${pkg.version}</span>
             </div>
-            <div>
-              <div class="scores">
-                <span>Points: <strong>${pkg.points}</strong></span>
-                <span>•</span>
-                <span>Popularity: <strong>${pkg.popularity}</strong></span>
-              </div>
-              <div class="card-actions">
-                <a href="${pkg.repoUrl}" class="btn-sm" target="_blank" rel="noopener noreferrer">
-                  <svg viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
-                  GitHub
-                </a>
-                <a href="${pkg.pubUrl}" class="btn-sm" target="_blank" rel="noopener noreferrer">
-                  pub.dev
-                </a>
-              </div>
+            <p class="pkg-desc">${pkg.desc}</p>
+            <div class="pkg-meta">
+              ${getMetaTags(pkg.category)}
             </div>
           </div>
-        `).join('');
+          <div>
+            <div class="scores">
+              <span>Points: <strong>${pkg.points}</strong></span>
+              <span>•</span>
+              <span>Popularity: <strong>${pkg.popularity}</strong></span>
+            </div>
+            <div class="card-actions">
+              <a href="${pkg.repoUrl}" class="btn-sm" target="_blank" rel="noopener noreferrer">
+                <svg viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+                GitHub
+              </a>
+              <a href="${pkg.pubUrl}" class="btn-sm" target="_blank" rel="noopener noreferrer">
+                pub.dev
+              </a>
+            </div>
+          </div>
+        </div>
+      `).join('');
 
-        status.style.display = 'none';
-
-      } catch (err) {
-        status.innerText = "Error syncing dashboard elements. Please refresh.";
-        console.error(err);
-      }
+      status.style.display = 'none';
     }
 
     function filterPackages(category, event) {
@@ -493,5 +498,6 @@
 
     loadPublisherPackages();
   </script>
+
 </body>
 </html>
