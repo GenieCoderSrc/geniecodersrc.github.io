@@ -1,0 +1,56 @@
+/* ==========================================================
+   LAYOUT
+   ========================================================== */
+
+body{
+
+    background:var(--color-bg);
+
+    color:var(--color-text);
+
+    font-family:var(--font-family);
+
+    line-height:1.7;
+}
+
+.container{
+
+    width:min(
+        var(--container-width),
+        calc(100% - 48px)
+    );
+
+    margin:auto;
+}
+
+section{
+
+    padding:
+
+        var(--space-6)
+
+        0;
+}
+
+.section-title{
+
+    font-size:var(--font-xl);
+
+    margin-bottom:12px;
+}
+
+.section-description{
+
+    color:var(--color-text-secondary);
+
+    margin-bottom:40px;
+
+    max-width:760px;
+}
+
+.grid{
+
+    display:grid;
+
+    gap:24px;
+}
