@@ -1,0 +1,38 @@
+@media(max-width:768px){
+
+.hero h1{
+
+    font-size:38px;
+}
+
+.section-title{
+
+    font-size:30px;
+}
+
+.container{
+
+    width:calc(100% - 28px);
+}
+
+.stats{
+
+    grid-template-columns:1fr;
+}
+
+.feature-grid{
+
+    grid-template-columns:1fr;
+}
+
+.hero-buttons{
+
+    flex-direction:column;
+}
+
+.btn{
+
+    justify-content:center;
+}
+
+}
