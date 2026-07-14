@@ -347,7 +347,21 @@
   <script>
     const USER = 'GenieCoderSrc';
     const MONOREPO = 'pub_package_monorepo';
-    const excludedRepos = ['geniecodersrc.github.io', '.github'];
+    
+    // Explicit exclusions for known non-package repos to prevent unnecessary API traffic
+    const EXCLUDED_REPOS = [
+      'geniecodersrc.github.io', 
+      '.github', 
+      'ape_kini', 
+      'bakir_hishab', 
+      MONOREPO
+    ];
+
+    // Manual overrides for any package whose registered pub.dev ID 
+    // differs completely from its GitHub repository or directory name.
+    const PUB_DEV_OVERRIDES = {
+      'navigation_wihout_context': 'navigation_wihout_context' // Matches your exact pub.dev typo link
+    };
 
     function determineCategory(name) {
       const lowerName = name.toLowerCase();
@@ -365,50 +379,58 @@
       return `<span class="tag tag-util">Utility</span>`;
     }
 
-    async function fetchPubMetrics(packageName) {
+    async function fetchPubMetrics(repoName) {
       try {
-        const infoRes = await fetch(`https://pub.dartlang.org/api/packages/${packageName}`);
-        const scoreRes = await fetch(`https://pub.dartlang.org/api/packages/${packageName}/metrics`);
+        // 1. Determine the exact package name on pub.dev
+        // Default behavior: convert hyphens to underscores (e.g., app-toast -> app_toast)
+        let pubName = PUB_DEV_OVERRIDES[repoName] || repoName.replaceAll('-', '_');
         
-        let version = 'v1.0.0';
-        let desc = 'Production ready package tracking modular software principles.';
+        // 2. Query pub.dev core API endpoints
+        const infoRes = await fetch(`https://pub.dartlang.org/api/packages/${pubName}`);
+        
+        // If pub.dev returns a 404, it means it's a regular app (like ape_kini), skip it!
+        if (!infoRes.ok) {
+          return { isValidPub: false };
+        }
+
+        const infoData = await infoRes.json();
+        const scoreRes = await fetch(`https://pub.dartlang.org/api/packages/${pubName}/metrics`);
+        
+        let version = `v${infoData.latest.version}`;
+        let desc = infoData.latest.pubspec.description || 'Production-ready package tracking modular principles.';
         let points = '--/140';
         let popularity = '--%';
         let downloads = '0';
 
-        if (infoRes.ok) {
-          const infoData = await infoRes.json();
-          version = `v${infoData.latest.version}`;
-          desc = infoData.latest.pubspec.description || desc;
-        }
-
         if (scoreRes.ok) {
           const scoreData = await scoreRes.json();
-          if(scoreData.score) {
+          if (scoreData.score) {
             points = `${scoreData.score.grantedPoints}/${scoreData.score.maxPoints}`;
             popularity = `${Math.round(scoreData.score.popularityScore * 100)}%`;
             downloads = scoreData.score.downloadCount != null ? scoreData.score.downloadCount.toLocaleString() : '0';
           }
         }
-        return { version, desc, points, popularity, downloads, isValidPub: infoRes.ok };
+        
+        return { version, desc, points, popularity, downloads, isValidPub: true, pubName };
       } catch (err) {
-        return { version: 'v1.0.0', desc: 'Active implementation module.', points: '--/140', popularity: '--%', downloads: '0', isValidPub: false };
+        // Fail-safe catch block for network errors
+        return { isValidPub: false };
       }
     }
 
     async function loadPublisherPackages() {
       const grid = document.getElementById('packages-grid');
       const status = document.getElementById('loading-status');
-      let discoveredPackages = [];
+      let discoveredRepos = [];
 
       try {
-        // 1. Handle Monorepo multi-packages discovery
+        // Phase 1: Crawl packages nested inside your Monorepo
         const monoResponse = await fetch(`https://api.github.com/repos/${USER}/${MONOREPO}/contents/packages`);
         if (monoResponse.ok) {
           const contents = await monoResponse.json();
           contents.forEach(item => {
             if (item.type === 'dir') {
-              discoveredPackages.push({
+              discoveredRepos.push({
                 name: item.name,
                 category: determineCategory(item.name),
                 repoUrl: `https://github.com/${USER}/${MONOREPO}/tree/main/packages/${item.name}`
@@ -417,7 +439,7 @@
           });
         }
 
-        // 2. Loop and crawl all GitHub repository pagination steps dynamically
+        // Phase 2: Page-loop through all independent standalone GitHub repositories
         let page = 1;
         let keepFetching = true;
 
@@ -432,10 +454,9 @@
           }
 
           repos.forEach(repo => {
-            if (!repo.fork && !excludedRepos.includes(repo.name) && repo.name !== MONOREPO) {
-              // Ensure we don't map duplicate listings
-              if (!discoveredPackages.some(p => p.name === repo.name)) {
-                discoveredPackages.push({
+            if (!repo.fork && !EXCLUDED_REPOS.includes(repo.name)) {
+              if (!discoveredRepos.some(p => p.name === repo.name)) {
+                discoveredRepos.push({
                   name: repo.name,
                   category: determineCategory(repo.name),
                   repoUrl: repo.html_url
@@ -443,35 +464,34 @@
               }
             }
           });
-
           page++;
         }
 
-        // 3. Hydrate live metadata from Pub.dev and filter out non-published repos
-        const functionalPromises = discoveredPackages.map(async (pkg) => {
+        // Phase 3: Query Pub.dev for metrics & filter out standard non-package apps concurrently
+        const validationPromises = discoveredRepos.map(async (pkg) => {
           const metrics = await fetchPubMetrics(pkg.name);
           return { ...pkg, ...metrics };
         });
 
-        const fullyHydrated = await Promise.all(functionalPromises);
+        const hydratedData = await Promise.all(validationPromises);
         
-        // Filter out items that are not actual packages on pub.dev (like template projects or websites)
-        const finalizedDataset = fullyHydrated.filter(pkg => pkg.isValidPub);
+        // This ensures non-packages like bakir_hishab are dropped out completely
+        const finalizedPackages = hydratedData.filter(pkg => pkg.isValidPub);
 
-        // Sort alphabetically
-        finalizedDataset.sort((a, b) => a.name.localeCompare(b.name));
+        // Alphabetize sorting layout
+        finalizedPackages.sort((a, b) => a.pubName.localeCompare(b.pubName));
 
-        if (finalizedDataset.length === 0) {
-          status.innerText = "No published items indexed on pub.dev currently.";
+        if (finalizedPackages.length === 0) {
+          status.innerText = "No packages detected in the registry.";
           return;
         }
 
-        // Render cards layout configuration
-        grid.innerHTML = finalizedDataset.map(pkg => `
+        // Phase 4: Construct card injections
+        grid.innerHTML = finalizedPackages.map(pkg => `
           <div class="card" data-category="${pkg.category}">
             <div>
               <div class="card-header">
-                <a href="https://pub.dev/packages/${pkg.name}" class="pkg-title" target="_blank" rel="noopener noreferrer">${pkg.name}</a>
+                <a href="https://pub.dev/packages/${pkg.pubName}" class="pkg-title" target="_blank" rel="noopener noreferrer">${pkg.pubName}</a>
                 <span class="pkg-version">${pkg.version}</span>
               </div>
               <p class="pkg-desc">${pkg.desc}</p>
@@ -494,7 +514,7 @@
                   <svg viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
                   GitHub
                 </a>
-                <a href="https://pub.dev/packages/${pkg.name}" class="btn-sm" target="_blank" rel="noopener noreferrer">
+                <a href="https://pub.dev/packages/${pkg.pubName}" class="btn-sm" target="_blank" rel="noopener noreferrer">
                   pub.dev
                 </a>
               </div>
@@ -505,7 +525,7 @@
         status.style.display = 'none';
 
       } catch (err) {
-        status.innerText = "Error refreshing real-time pipeline metadata profiles.";
+        status.innerText = "Error syncing runtime portfolio data.";
         console.error(err);
       }
     }
@@ -525,7 +545,9 @@
       });
     }
 
+    // Initialize execution loop
     loadPublisherPackages();
-  </script>
+</script>
+
 </body>
 </html>
