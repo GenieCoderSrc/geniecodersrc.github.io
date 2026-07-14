@@ -348,7 +348,6 @@
     const USER = 'GenieCoderSrc';
     const MONOREPO = 'pub_package_monorepo';
     
-    // Explicit exclusions for known non-package repos to prevent unnecessary API traffic
     const EXCLUDED_REPOS = [
       'geniecodersrc.github.io', 
       '.github', 
@@ -357,10 +356,8 @@
       MONOREPO
     ];
 
-    // Manual overrides for any package whose registered pub.dev ID 
-    // differs completely from its GitHub repository or directory name.
     const PUB_DEV_OVERRIDES = {
-      'navigation_wihout_context': 'navigation_wihout_context' // Matches your exact pub.dev typo link
+      'navigation_wihout_context': 'navigation_wihout_context'
     };
 
     function determineCategory(name) {
@@ -379,41 +376,48 @@
       return `<span class="tag tag-util">Utility</span>`;
     }
 
+    // Uses AllOrigins proxy wrapper to bypass strict browser-side pub.dev CORS origin blocks
     async function fetchPubMetrics(repoName) {
       try {
-        // 1. Determine the exact package name on pub.dev
-        // Default behavior: convert hyphens to underscores (e.g., app-toast -> app_toast)
         let pubName = PUB_DEV_OVERRIDES[repoName] || repoName.replaceAll('-', '_');
         
-        // 2. Query pub.dev core API endpoints
-        const infoRes = await fetch(`https://pub.dartlang.org/api/packages/${pubName}`);
+        // Wrap target URLs inside the open-source CORS proxy handler
+        const targetInfoUrl = `https://pub.dartlang.org/api/packages/${pubName}`;
+        const targetScoreUrl = `https://pub.dartlang.org/api/packages/${pubName}/metrics`;
         
-        // If pub.dev returns a 404, it means it's a regular app (like ape_kini), skip it!
-        if (!infoRes.ok) {
-          return { isValidPub: false };
-        }
-
-        const infoData = await infoRes.json();
-        const scoreRes = await fetch(`https://pub.dartlang.org/api/packages/${pubName}/metrics`);
+        const proxyPrefix = "https://api.allorigins.win/get?url=";
+        
+        const infoRes = await fetch(`${proxyPrefix}${encodeURIComponent(targetInfoUrl)}`);
+        if (!infoRes.ok) return { isValidPub: false };
+        
+        const wrapperData = await infoRes.json();
+        // AllOrigins returns the string payload inside the .contents key object
+        if(!wrapperData.contents) return { isValidPub: false };
+        
+        const infoData = JSON.parse(wrapperData.contents);
         
         let version = `v${infoData.latest.version}`;
-        let desc = infoData.latest.pubspec.description || 'Production-ready package tracking modular principles.';
+        let desc = infoData.latest.pubspec.description || 'Production-ready modular architecture component.';
         let points = '--/140';
         let popularity = '--%';
         let downloads = '0';
 
+        const scoreRes = await fetch(`${proxyPrefix}${encodeURIComponent(targetScoreUrl)}`);
         if (scoreRes.ok) {
-          const scoreData = await scoreRes.json();
-          if (scoreData.score) {
-            points = `${scoreData.score.grantedPoints}/${scoreData.score.maxPoints}`;
-            popularity = `${Math.round(scoreData.score.popularityScore * 100)}%`;
-            downloads = scoreData.score.downloadCount != null ? scoreData.score.downloadCount.toLocaleString() : '0';
+          const scoreWrapper = await scoreRes.json();
+          if (scoreWrapper.contents) {
+            const scoreData = JSON.parse(scoreWrapper.contents);
+            if (scoreData.score) {
+              points = `${scoreData.score.grantedPoints}/${scoreData.score.maxPoints}`;
+              popularity = `${Math.round(scoreData.score.popularityScore * 100)}%`;
+              downloads = scoreData.score.downloadCount != null ? scoreData.score.downloadCount.toLocaleString() : '0';
+            }
           }
         }
         
         return { version, desc, points, popularity, downloads, isValidPub: true, pubName };
       } catch (err) {
-        // Fail-safe catch block for network errors
+        console.error("CORS Pipeline Exception:", err);
         return { isValidPub: false };
       }
     }
@@ -424,7 +428,7 @@
       let discoveredRepos = [];
 
       try {
-        // Phase 1: Crawl packages nested inside your Monorepo
+        // 1. Crawl Monorepo Directory Array Structs
         const monoResponse = await fetch(`https://api.github.com/repos/${USER}/${MONOREPO}/contents/packages`);
         if (monoResponse.ok) {
           const contents = await monoResponse.json();
@@ -439,7 +443,7 @@
           });
         }
 
-        // Phase 2: Page-loop through all independent standalone GitHub repositories
+        // 2. Loop Standalone Repository Pagination Streams
         let page = 1;
         let keepFetching = true;
 
@@ -467,18 +471,15 @@
           page++;
         }
 
-        // Phase 3: Query Pub.dev for metrics & filter out standard non-package apps concurrently
+        // 3. Hydrate using Proxy Profiles
         const validationPromises = discoveredRepos.map(async (pkg) => {
           const metrics = await fetchPubMetrics(pkg.name);
           return { ...pkg, ...metrics };
         });
 
         const hydratedData = await Promise.all(validationPromises);
-        
-        // This ensures non-packages like bakir_hishab are dropped out completely
         const finalizedPackages = hydratedData.filter(pkg => pkg.isValidPub);
 
-        // Alphabetize sorting layout
         finalizedPackages.sort((a, b) => a.pubName.localeCompare(b.pubName));
 
         if (finalizedPackages.length === 0) {
@@ -486,7 +487,6 @@
           return;
         }
 
-        // Phase 4: Construct card injections
         grid.innerHTML = finalizedPackages.map(pkg => `
           <div class="card" data-category="${pkg.category}">
             <div>
@@ -525,7 +525,7 @@
         status.style.display = 'none';
 
       } catch (err) {
-        status.innerText = "Error syncing runtime portfolio data.";
+        status.innerText = "Error syncing portfolio parameters.";
         console.error(err);
       }
     }
@@ -545,9 +545,10 @@
       });
     }
 
-    // Initialize execution loop
     loadPublisherPackages();
 </script>
+
+
 
 </body>
 </html>
