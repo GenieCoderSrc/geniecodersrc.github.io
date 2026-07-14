@@ -63,7 +63,7 @@
     /* ─── Publisher Header ─── */
     header {
       text-align: center;
-      margin-bottom: 48px;
+      margin-bottom: 32px;
     }
 
     .publisher-badge {
@@ -97,7 +97,50 @@
       font-size: 16px;
       color: #8b949e;
       max-width: 600px;
-      margin: 0 auto 24px auto;
+      margin: 0 auto;
+    }
+
+    /* ─── Search & Controls Area ─── */
+    .controls-wrapper {
+      max-width: 600px;
+      margin: 0 auto 40px auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      align-items: center;
+    }
+
+    .search-container {
+      width: 100%;
+      position: relative;
+    }
+
+    .search-input {
+      width: 100%;
+      background: #161b22;
+      color: #f0f6fc;
+      border: 1px solid #30363d;
+      padding: 12px 16px 12px 42px;
+      border-radius: 8px;
+      font-size: 15px;
+      outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .search-input:focus {
+      border-color: #58a6ff;
+      box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.15);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 18px;
+      height: 18px;
+      color: #8b949e;
+      pointer-events: none;
     }
 
     /* ─── Filter Tabs ─── */
@@ -105,7 +148,8 @@
       display: flex;
       justify-content: center;
       gap: 12px;
-      margin-bottom: 32px;
+      width: 100%;
+      flex-wrap: wrap;
     }
 
     .filter-btn {
@@ -293,8 +337,8 @@
         font-size: 30px;
       }
 
-      .filters {
-        flex-wrap: wrap;
+      .controls-wrapper {
+        margin-bottom: 24px;
       }
 
       .grid {
@@ -320,14 +364,23 @@
       </a>
       <h1>Flutter & Dart Ecosystem</h1>
       <p>High-quality, production-ready, and modular packages designed to construct elegant, testable Flutter applications seamlessly.</p>
-      
-      <div class="filters">
-        <button class="filter-btn active" id="btn-all" onclick="filterPackages('all', event)">All Packages</button>
-        <button class="filter-btn" onclick="filterPackages('state', event)">State & Logic</button>
-        <button class="filter-btn" onclick="filterPackages('ui', event)">UI Components</button>
-        <button class="filter-btn" onclick="filterPackages('util', event)">Utilities</button>
-      </div>
     </header>
+
+    <div class="controls-wrapper">
+      <div class="search-container">
+        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input type="text" id="search-bar" class="search-input" placeholder="Search packages by name or description..." oninput="applyFilters()">
+      </div>
+
+      <div class="filters">
+        <button class="filter-btn active" id="btn-all" onclick="changeCategory('all', event)">All Packages</button>
+        <button class="filter-btn" onclick="changeCategory('state', event)">State & Logic</button>
+        <button class="filter-btn" onclick="changeCategory('ui', event)">UI Components</button>
+        <button class="filter-btn" onclick="changeCategory('util', event)">Utilities</button>
+      </div>
+    </div>
 
     <div id="loading-status" class="loading-status">Loading packages ecosystem from GitHub...</div>
 
@@ -342,7 +395,7 @@
     const USER = 'GenieCoderSrc';
     const MONOREPO = 'pub_package_monorepo';
     
-    // Explicit exclusions to remove standard non-package apps and sites
+    // Exact exclusion list to hide non-package entries
     const excludedRepos = [
       MONOREPO, 
       'geniecodersrc.github.io', 
@@ -350,8 +403,10 @@
       'ape_kini', 
       'bakir_hishab',
       'icon_data_generator',
-      'navigation_wihout_context',
+      'navigation_wihout_context'
     ];
+
+    let currentCategory = 'all';
 
     function determineCategory(name) {
       const lowerName = name.toLowerCase();
@@ -374,46 +429,43 @@
       const status = document.getElementById('loading-status');
       let dataset = [];
 
-      // 1. Try to scan monorepo packages directory (wrapped in an isolated try-catch)
       try {
-        const monoResponse = await fetch(`https://api.github.com/repos/${USER}/${MONOREPO}/contents/packages`);
-        if (monoResponse.ok) {
-          const contents = await monoResponse.json();
-          if (Array.isArray(contents)) {
-            contents.forEach(item => {
-              if (item.type === 'dir') {
-                const cat = determineCategory(item.name);
-                let cleanPubName = item.name.replaceAll('-', '_');
-                if (item.name === 'navigation_wihout_context') cleanPubName = 'navigation_wihout_context';
+        // 1. Safe scan monorepo packages directory
+        try {
+          const monoResponse = await fetch(`https://api.github.com/repos/${USER}/${MONOREPO}/contents/packages`);
+          if (monoResponse.ok) {
+            const contents = await monoResponse.json();
+            if (Array.isArray(contents)) {
+              contents.forEach(item => {
+                if (item.type === 'dir') {
+                  const cat = determineCategory(item.name);
+                  let cleanPubName = item.name.replaceAll('-', '_');
+                  if (item.name === 'navigation_wihout_context') cleanPubName = 'navigation_wihout_context';
 
-                dataset.push({
-                  name: item.name,
-                  version: 'v1.1.0',
-                  desc: `Modular structural tool custom tailored for production deployments. Fully manageable within Flutter architectures.`,
-                  category: cat,
-                  points: '140/140',
-                  popularity: '100%',
-                  repoUrl: `https://github.com/${USER}/${MONOREPO}/tree/main/packages/${item.name}`,
-                  pubUrl: `https://pub.dev/packages/${cleanPubName}`
-                });
-              }
-            });
+                  dataset.push({
+                    name: item.name,
+                    version: 'v1.1.0',
+                    desc: `Modular structural tool custom tailored for production deployments. Fully manageable within Flutter architectures.`,
+                    category: cat,
+                    points: '140/140',
+                    popularity: '100%',
+                    repoUrl: `https://github.com/${USER}/${MONOREPO}/tree/main/packages/${item.name}`,
+                    pubUrl: `https://pub.dev/packages/${cleanPubName}`
+                  });
+                }
+              });
+            }
           }
+        } catch (mErr) {
+          console.warn("Monorepo crawl skipped:", mErr.message);
         }
-      } catch (monoErr) {
-        // Monorepo does not exist, is private, or has no packages folder.
-        // We log it to the console but don't stop execution.
-        console.warn("Monorepo fetch skipped or unavailable:", monoErr.message);
-      }
 
-      // 2. Scan independent repositories (This will run even if Phase 1 failed!)
-      try {
+        // 2. Scan independent repositories
         const reposResponse = await fetch(`https://api.github.com/users/${USER}/repos?per_page=100`);
         if (reposResponse.ok) {
           const repos = await reposResponse.json();
           repos.forEach(repo => {
             if (!repo.fork && !excludedRepos.includes(repo.name)) {
-              // Deduplicate so monorepo packages aren't double counted
               if (!dataset.some(p => p.name === repo.name)) {
                 const cat = determineCategory(repo.name);
                 let cleanPubName = repo.name.replaceAll('-', '_');
@@ -433,64 +485,74 @@
             }
           });
         }
-      } catch (reposErr) {
-        console.error("Failed to fetch public repositories:", reposErr);
-      }
 
-      // Alphabetically organize final mapping presentation
-      dataset.sort((a, b) => a.name.localeCompare(b.name));
+        dataset.sort((a, b) => a.name.localeCompare(b.name));
 
-      if (dataset.length === 0) {
-        status.innerText = "No public packages detected.";
-        return;
-      }
+        if (dataset.length === 0) {
+          status.innerText = "No published items detected.";
+          return;
+        }
 
-      // 3. Inject cards directly onto visual DOM elements
-      grid.innerHTML = dataset.map(pkg => `
-        <div class="card" data-category="${pkg.category}">
-          <div>
-            <div class="card-header">
-              <a href="${pkg.pubUrl}" class="pkg-title" target="_blank" rel="noopener noreferrer">${pkg.name}</a>
-              <span class="pkg-version">${pkg.version}</span>
+        // Render HTML markup matrix
+        grid.innerHTML = dataset.map(pkg => `
+          <div class="card" data-category="${pkg.category}" data-name="${pkg.name.toLowerCase()}" data-desc="${pkg.desc.toLowerCase()}">
+            <div>
+              <div class="card-header">
+                <a href="${pkg.pubUrl}" class="pkg-title" target="_blank" rel="noopener noreferrer">${pkg.name}</a>
+                <span class="pkg-version">${pkg.version}</span>
+              </div>
+              <p class="pkg-desc">${pkg.desc}</p>
+              <div class="pkg-meta">
+                ${getMetaTags(pkg.category)}
+              </div>
             </div>
-            <p class="pkg-desc">${pkg.desc}</p>
-            <div class="pkg-meta">
-              ${getMetaTags(pkg.category)}
-            </div>
-          </div>
-          <div>
-            <div class="scores">
-              <span>Points: <strong>${pkg.points}</strong></span>
-              <span>•</span>
-              <span>Popularity: <strong>${pkg.popularity}</strong></span>
-            </div>
-            <div class="card-actions">
-              <a href="${pkg.repoUrl}" class="btn-sm" target="_blank" rel="noopener noreferrer">
-                <svg viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
-                GitHub
-              </a>
-              <a href="${pkg.pubUrl}" class="btn-sm" target="_blank" rel="noopener noreferrer">
-                pub.dev
-              </a>
+            <div>
+              <div class="scores">
+                <span>Points: <strong>${pkg.points}</strong></span>
+                <span>•</span>
+                <span>Popularity: <strong>${pkg.popularity}</strong></span>
+              </div>
+              <div class="card-actions">
+                <a href="${pkg.repoUrl}" class="btn-sm" target="_blank" rel="noopener noreferrer">
+                  <svg viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+                  GitHub
+                </a>
+                <a href="${pkg.pubUrl}" class="btn-sm" target="_blank" rel="noopener noreferrer">
+                  pub.dev
+                </a>
+              </div>
             </div>
           </div>
-        </div>
-      `).join('');
+        `).join('');
 
-      status.style.display = 'none';
+        status.style.display = 'none';
+
+      } catch (err) {
+        status.innerText = "Error syncing dashboard elements. Please refresh.";
+        console.error(err);
+      }
     }
 
-    function filterPackages(category, event) {
+    // Handles logic mapping tab conversions
+    function changeCategory(category, event) {
       const buttons = document.querySelectorAll('.filter-btn');
       buttons.forEach(btn => btn.classList.remove('active'));
+      if (event) event.target.classList.add('active');
       
-      if (event) {
-        event.target.classList.add('active');
-      }
+      currentCategory = category;
+      applyFilters();
+    }
 
+    // Combines search criteria matches alongside category filters simultaneously
+    function applyFilters() {
+      const searchQuery = document.getElementById('search-bar').value.toLowerCase().trim();
       const cards = document.querySelectorAll('.card');
+
       cards.forEach(card => {
-        if (category === 'all' || card.getAttribute('data-category') === category) {
+        const matchesCategory = (currentCategory === 'all' || card.getAttribute('data-category') === currentCategory);
+        const matchesSearch = (card.getAttribute('data-name').includes(searchQuery) || card.getAttribute('data-desc').includes(searchQuery));
+
+        if (matchesCategory && matchesSearch) {
           card.style.display = 'flex';
         } else {
           card.style.display = 'none';
@@ -498,8 +560,8 @@
       });
     }
 
+    // Run core engine init
     loadPublisherPackages();
   </script>
-
 </body>
 </html>
