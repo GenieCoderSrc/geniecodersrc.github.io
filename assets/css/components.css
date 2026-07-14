@@ -1,0 +1,122 @@
+/* ==========================================================
+   BUTTONS
+   ========================================================== */
+
+.btn{
+
+    display:inline-flex;
+
+    align-items:center;
+
+    gap:10px;
+
+    padding:
+
+        12px 24px;
+
+    border-radius:999px;
+
+    border:1px solid var(--color-border);
+
+    transition:var(--transition);
+
+    background:var(--color-surface);
+}
+
+.btn:hover{
+
+    border-color:var(--color-primary);
+
+    background:var(--color-surface-hover);
+}
+
+.btn-primary{
+
+    background:var(--color-success);
+
+    border-color:var(--color-success);
+
+    color:white;
+}
+
+.btn-primary:hover{
+
+    background:var(--color-success-hover);
+}
+
+/* ==========================================================
+   CARD
+   ========================================================== */
+
+.card{
+
+    background:var(--color-surface);
+
+    border:1px solid var(--color-border);
+
+    border-radius:var(--radius-lg);
+
+    padding:32px;
+
+    transition:var(--transition);
+
+    box-shadow:var(--shadow-lg);
+}
+
+.card:hover{
+
+    border-color:var(--color-primary);
+
+    transform:translateY(-3px);
+}
+
+/* ==========================================================
+   BADGES
+   ========================================================== */
+
+.badge{
+
+    display:inline-block;
+
+    padding:6px 14px;
+
+    border-radius:999px;
+
+    background:#1f2937;
+
+    color:var(--color-primary);
+
+    font-size:13px;
+}
+
+/* ==========================================================
+   STATS
+   ========================================================== */
+
+.stats{
+
+    display:grid;
+
+    grid-template-columns:
+
+        repeat(auto-fit,minmax(220px,1fr));
+
+    gap:24px;
+}
+
+.stat{
+
+    text-align:center;
+}
+
+.stat-number{
+
+    font-size:44px;
+
+    font-weight:700;
+}
+
+.stat-label{
+
+    color:var(--color-text-secondary);
+}
