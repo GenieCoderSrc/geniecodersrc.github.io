@@ -198,6 +198,7 @@
       display: flex;
       flex-direction: column;
       justify-content: space-between;
+      min-height: 220px;
       transition: transform 0.2s ease, border-color 0.2s ease;
     }
 
@@ -224,28 +225,19 @@
       text-decoration: underline;
     }
 
-    .pkg-version {
-      font-size: 12px;
-      color: #8b949e;
-      background: #21262d;
-      padding: 2px 8px;
-      border-radius: 12px;
-      border: 1px solid #30363d;
-    }
-
     .pkg-desc {
       font-size: 14px;
       color: #c9d1d9;
-      margin-bottom: 20px;
+      margin-bottom: 16px;
       flex-grow: 1;
     }
 
-    /* Meta tags & scores */
+    /* Meta tags */
     .pkg-meta {
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
-      margin-bottom: 16px;
+      margin-bottom: 24px;
     }
 
     .tag {
@@ -259,23 +251,6 @@
     .tag-state { background: #1f2937; color: #ff7b72; }
     .tag-ui { background: #1f2937; color: #7ee787; }
     .tag-util { background: #1f2937; color: #d2a8ff; }
-
-    .scores {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      font-size: 12px;
-      color: #8b949e;
-      background: #0d1117;
-      padding: 8px 12px;
-      border-radius: 8px;
-      border: 1px solid #21262d;
-      margin-bottom: 20px;
-    }
-
-    .scores span strong {
-      color: #f0f6fc;
-    }
 
     /* Actions */
     .card-actions {
@@ -395,7 +370,7 @@
     const USER = 'GenieCoderSrc';
     const MONOREPO = 'pub_package_monorepo';
     
-    // Exact exclusion list to hide non-package entries
+    // Explicit exclusion list to remove private/non-package entries
     const excludedRepos = [
       MONOREPO, 
       'geniecodersrc.github.io', 
@@ -444,11 +419,8 @@
 
                   dataset.push({
                     name: item.name,
-                    version: 'v1.1.0',
                     desc: `Modular structural tool custom tailored for production deployments. Fully manageable within Flutter architectures.`,
                     category: cat,
-                    points: '140/140',
-                    popularity: '100%',
                     repoUrl: `https://github.com/${USER}/${MONOREPO}/tree/main/packages/${item.name}`,
                     pubUrl: `https://pub.dev/packages/${cleanPubName}`
                   });
@@ -473,11 +445,8 @@
 
                 dataset.push({
                   name: repo.name,
-                  version: 'v1.0.4',
                   desc: repo.description || `High-performance standalone module ensuring high architectural cohesion and straightforward implementation APIs.`,
                   category: cat,
-                  points: '130+/140',
-                  popularity: '95%',
                   repoUrl: repo.html_url,
                   pubUrl: `https://pub.dev/packages/${cleanPubName}`
                 });
@@ -493,13 +462,12 @@
           return;
         }
 
-        // Render HTML markup matrix
+        // Render clean HTML structures
         grid.innerHTML = dataset.map(pkg => `
           <div class="card" data-category="${pkg.category}" data-name="${pkg.name.toLowerCase()}" data-desc="${pkg.desc.toLowerCase()}">
             <div>
               <div class="card-header">
                 <a href="${pkg.pubUrl}" class="pkg-title" target="_blank" rel="noopener noreferrer">${pkg.name}</a>
-                <span class="pkg-version">${pkg.version}</span>
               </div>
               <p class="pkg-desc">${pkg.desc}</p>
               <div class="pkg-meta">
@@ -507,11 +475,6 @@
               </div>
             </div>
             <div>
-              <div class="scores">
-                <span>Points: <strong>${pkg.points}</strong></span>
-                <span>•</span>
-                <span>Popularity: <strong>${pkg.popularity}</strong></span>
-              </div>
               <div class="card-actions">
                 <a href="${pkg.repoUrl}" class="btn-sm" target="_blank" rel="noopener noreferrer">
                   <svg viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
