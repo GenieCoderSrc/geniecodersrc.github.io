@@ -6,9 +6,9 @@
     <title>GenieCoderSrc - Published Pub Packages</title>
     <style>
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             line-height: 1.6;
-            max-width: 1000px;
+            max-width: 900px;
             margin: 40px auto;
             padding: 0 20px;
             color: #24292f;
@@ -16,23 +16,11 @@
         h1 {
             border-bottom: 1px solid #d8dee4;
             padding-bottom: 10px;
-            margin-bottom: 5px;
-        }
-        .subtitle {
-            color: #57606a;
-            font-size: 16px;
-            margin-bottom: 25px;
-        }
-        .loading {
-            font-style: italic;
-            color: #57606a;
-            padding: 20px;
         }
         table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 20px;
-            display: none; /* Hidden until loaded */
         }
         th, td {
             text-align: left;
@@ -56,59 +44,50 @@
             font-size: 12px;
             font-weight: 500;
             border-radius: 2em;
+            background-color: #ddf4ff;
+            color: #0969da;
         }
-        .badge-mono { background-color: #ddf4ff; color: #0969da; }
-        .badge-standalone { background-color: #dafbe1; color: #1a7f37; }
-        .search-box {
-            width: 100%;
-            padding: 10px;
-            font-size: 15px;
-            border: 1px solid #d0d7de;
-            border-radius: 6px;
-            box-sizing: border-box;
-            margin-bottom: 15px;
+        .loading {
+            font-style: italic;
+            color: #57606a;
+            padding: 20px 0;
         }
     </style>
 </head>
 <body>
 
-    <h1>Published Dart & Flutter Packages</h1>
-    <div class="subtitle">A dynamically updated directory of packages by GenieCoderSrc.</div>
+    <h1>Published Dart/Flutter Packages</h1>
+    <p>A collection of open-source packages maintained by GenieCoderSrc.</p>
 
-    <input type="text" id="search" class="search-box" placeholder="Search packages by name...">
-    
     <div id="status" class="loading">Loading packages from GitHub...</div>
 
-    <table id="package-table">
+    <table id="package-table" style="display: none;">
         <thead>
             <tr>
                 <th>Package Name</th>
-                <th>Type</th>
+                <th>Repository Type</th>
                 <th>GitHub Repository</th>
                 <th>Pub.dev</th>
             </tr>
         </thead>
         <tbody id="package-list">
-            <!-- Dynamic rows inject here -->
+            <!-- Dynamic packages are injected here -->
         </tbody>
     </table>
 
     <script>
         const USER = 'GenieCoderSrc';
         const MONOREPO = 'pub_package_monorepo';
-        
-        // Exclude internal configuration repos that aren't Dart/Flutter packages
         const excludedRepos = [MONOREPO, 'geniecodersrc.github.io', '.github'];
 
         async function fetchPackages() {
             const statusEl = document.getElementById('status');
             const tableEl = document.getElementById('package-table');
             const listEl = document.getElementById('package-list');
-            
             let allPackages = [];
 
             try {
-                // 1. Fetch monorepo sub-packages content
+                // 1. Fetch monorepo packages
                 const monoUrl = `https://api.github.com/repos/${USER}/${MONOREPO}/contents/packages`;
                 const monoResponse = await fetch(monoUrl);
                 if (monoResponse.ok) {
@@ -125,7 +104,7 @@
                     });
                 }
 
-                // 2. Fetch standalone repositories
+                // 2. Fetch standalone repositories (Max 100 repos)
                 const reposUrl = `https://api.github.com/users/${USER}/repos?per_page=100`;
                 const reposResponse = await fetch(reposUrl);
                 if (reposResponse.ok) {
@@ -142,36 +121,26 @@
                     });
                 }
 
-                // Sort packages alphabetically
+                // Sort alphabetically
                 allPackages.sort((a, b) => a.name.localeCompare(b.name));
 
-                // Render rows
-                function renderTable(packagesToRender) {
-                    listEl.innerHTML = packagesToRender.map(pkg => `
-                        <tr>
-                            <td><strong>${pkg.name}</strong></td>
-                            <td><span class="badge ${pkg.type === 'Monorepo' ? 'badge-mono' : 'badge-standalone'}">${pkg.type}</span></td>
-                            <td><a href="${pkg.repoUrl}" target="_blank">View Source</a></td>
-                            <td><a href="${pkg.pubUrl}" target="_blank">pub.dev/${pkg.name}</a></td>
-                        </tr>
-                    `).join('');
-                }
-
                 if (allPackages.length === 0) {
-                    statusEl.innerText = "No published packages found.";
+                    statusEl.innerText = "No packages found.";
                     return;
                 }
 
+                // Inject generated rows using your exact layout
+                listEl.innerHTML = allPackages.map(pkg => `
+                    <tr>
+                        <td><strong>${pkg.name}</strong></td>
+                        <td><span class="badge">${pkg.type}</span></td>
+                        <td><a href="${pkg.repoUrl}" target="_blank">View Source</a></td>
+                        <td><a href="${pkg.pubUrl}" target="_blank">pub.dev/${pkg.name}</a></td>
+                    </tr>
+                `).join('');
+
                 statusEl.style.display = 'none';
                 tableEl.style.display = 'table';
-                renderTable(allPackages);
-
-                // Setup live search bar functionality
-                document.getElementById('search').addEventListener('input', (e) => {
-                    const term = e.target.value.toLowerCase();
-                    const filtered = allPackages.filter(p => p.name.toLowerCase().includes(term));
-                    renderTable(filtered);
-                });
 
             } catch (error) {
                 statusEl.innerText = "Failed to load packages. Please try refreshing.";
