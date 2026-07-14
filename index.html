@@ -1,314 +1,172 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Shohidul Islam | Flutter Platform Engineer</title>
-  <meta name="description" content="Shohidul Islam — Mobile Application Architect & Flutter Platform Engineer. Author of 50+ pub.dev packages and creator of Genie Coder." />
-  
-  <meta property="og:title" content="Shohidul Islam | Flutter Platform Engineer" />
-  <meta property="og:description" content="Mobile Application Architect & Flutter Platform Engineer. 50+ pub.dev packages. Creator of Genie Coder." />
-  <meta property="og:url" content="https://geniecodersrc.github.io" />
-  <meta property="og:type" content="website" />
-  
-  <style>
-    /* ─── Reset & Base ─── */
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-      background: #0d1117;
-      color: #e6edf3;
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
-      line-height: 1.6;
-    }
-
-    /* ─── Card ─── */
-    .card {
-      max-width: 820px;
-      width: 100%;
-      background: #161b22;
-      border: 1px solid #30363d;
-      border-radius: 24px;
-      padding: 48px 40px;
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
-      transition: border-color 0.3s ease;
-    }
-
-    .card:hover {
-      border-color: #58a6ff;
-    }
-
-    /* ─── Header ─── */
-    .badge {
-      display: inline-block;
-      background: #1f2937;
-      color: #58a6ff;
-      font-size: 12px;
-      font-weight: 600;
-      padding: 4px 14px;
-      border-radius: 20px;
-      letter-spacing: 0.3px;
-      text-transform: uppercase;
-      margin-bottom: 20px;
-      border: 1px solid #30363d;
-    }
-
-    h1 {
-      font-size: 36px;
-      font-weight: 700;
-      letter-spacing: -0.5px;
-      margin-bottom: 6px;
-      color: #f0f6fc;
-    }
-
-    .title {
-      font-size: 20px;
-      font-weight: 400;
-      color: #8b949e;
-      margin-bottom: 20px;
-    }
-
-    .title span {
-      color: #58a6ff;
-      font-weight: 500;
-    }
-
-    /* ─── Divider ─── */
-    .divider {
-      height: 1px;
-      background: linear-gradient(to right, #30363d, #58a6ff44, #30363d);
-      margin: 24px 0 28px 0;
-    }
-
-    /* ─── Bio ─── */
-    .bio {
-      font-size: 16px;
-      color: #c9d1d9;
-      margin-bottom: 28px;
-    }
-
-    .bio strong {
-      color: #f0f6fc;
-    }
-
-    /* ─── Stats Grid ─── */
-    .stats {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-      gap: 16px;
-      margin-bottom: 28px;
-    }
-
-    .stat-item {
-      background: #0d1117;
-      border: 1px solid #21262d;
-      border-radius: 16px;
-      padding: 16px 18px;
-      text-align: center;
-      transition: border-color 0.3s ease, transform 0.2s ease;
-    }
-
-    .stat-item:hover {
-      border-color: #58a6ff;
-      transform: translateY(-2px);
-    }
-
-    .stat-number {
-      font-size: 28px;
-      font-weight: 700;
-      color: #f0f6fc;
-      display: block;
-    }
-
-    .stat-label {
-      font-size: 13px;
-      color: #8b949e;
-      font-weight: 400;
-    }
-
-    /* ─── Links ─── */
-    .links {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-top: 8px;
-    }
-
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: #21262d;
-      color: #c9d1d9;
-      padding: 10px 20px;
-      border-radius: 40px;
-      text-decoration: none;
-      font-size: 14px;
-      font-weight: 500;
-      border: 1px solid #30363d;
-      transition: background 0.25s ease, border-color 0.25s ease, color 0.25s ease;
-    }
-
-    .btn:hover {
-      background: #30363d;
-      border-color: #58a6ff;
-      color: #f0f6fc;
-    }
-
-    .btn-primary {
-      background: #238636;
-      border-color: #238636;
-      color: #fff;
-    }
-
-    .btn-primary:hover {
-      background: #2ea043;
-      border-color: #2ea043;
-      color: #fff;
-    }
-
-    .btn svg {
-      width: 18px;
-      height: 18px;
-      fill: currentColor;
-      flex-shrink: 0;
-    }
-
-    /* ─── Footer ─── */
-    .footer {
-      margin-top: 32px;
-      font-size: 13px;
-      color: #484f58;
-      text-align: center;
-      border-top: 1px solid #21262d;
-      padding-top: 20px;
-    }
-
-    .footer a {
-      color: #58a6ff;
-      text-decoration: none;
-    }
-
-    .footer a:hover {
-      text-decoration: underline;
-    }
-
-    /* ─── Responsive ─── */
-    @media (max-width: 600px) {
-      body {
-        padding: 16px;
-      }
-      
-      .card {
-        padding: 32px 24px;
-      }
-
-      h1 {
-        font-size: 28px;
-      }
-
-      .title {
-        font-size: 17px;
-      }
-
-      .bio {
-        font-size: 15px;
-      }
-
-      .stats {
-        grid-template-columns: repeat(2, 1fr);
-      }
-
-      .links {
-        flex-direction: column;
-      }
-
-      .btn {
-        justify-content: center;
-        width: 100%;
-      }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shohidul Islam | Mobile Application Architect</title>
+    <link rel="stylesheet" href="assets/css/variables.css">
+    <link rel="stylesheet" href="assets/css/layout.css">
+    <link rel="stylesheet" href="assets/css/navbar.css">
+    <link rel="stylesheet" href="assets/css/buttons.css">
+    <link rel="stylesheet" href="assets/css/cards.css">
+    <link rel="stylesheet" href="assets/css/footer.css">
+    <link rel="stylesheet" href="assets/css/pages.css">
 </head>
-
 <body>
-  <main class="card">
 
-    <div class="badge">🚀 Open Source · Flutter · Dart</div>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="nav-logo">Shohidul Islam</a>
+            <button class="nav-toggle" aria-label="Toggle Navigation">☰</button>
+            <ul class="nav-menu">
+                <li><a href="index.html" class="nav-link active">Home</a></li>
+                <li><a href="genie.html" class="nav-link">Genie Coder</a></li>
+                <li><a href="projects.html" class="nav-link">Enterprise Apps</a></li>
+                <li><a href="packages.html" class="nav-link">Open Source</a></li>
+                <li><a href="resume.html" class="nav-link">Resume</a></li>
+                <li><a href="https://github.com" target="_blank" class="nav-link">GitHub</a></li>
+                <li><a href="https://linkedin.com" target="_blank" class="nav-link">LinkedIn</a></li>
+            </ul>
+        </div>
+    </nav>
 
-    <h1>Shohidul Islam</h1>
-    <div class="title">
-      Mobile Application Architect · <span>Flutter Platform Engineer</span>
-    </div>
+    <!-- Hero Section -->
+    <header class="hero">
+        <div class="container">
+            <h1>Shohidul Islam</h1>
+            <h2>Mobile Application Architect &bull; Flutter Platform Engineer</h2>
+            <p style="color: var(--accent); font-weight: 500; margin-bottom: 8px;">Creator of Genie Coder</p>
+            <p style="color: var(--text-muted); margin-bottom: 24px;">9+ years building software | 7+ years building Flutter platforms</p>
+            <div class="hero-cta">
+                <a href="genie.html" class="btn btn-primary">Explore Genie Coder</a>
+                <a href="projects.html" class="btn btn-secondary">View Enterprise Apps</a>
+            </div>
+        </div>
+    </header>
 
-    <div class="bio">
-      <strong>9+ years</strong> of software engineering experience · 
-      <strong>7+ years</strong> specializing in Flutter &amp; Dart.
-      <br /><br />
-      Architect of <strong>Genie Coder</strong> — a Flutter platform that generates
-      production-ready enterprise applications from structured module definitions.
-      <br /><br />
-      Author and maintainer of <strong>50+</strong> public Dart &amp; Flutter packages
-      on <strong>pub.dev</strong>.
-    </div>
+    <main class="container">
+        
+        <!-- Small Introduction -->
+        <section>
+            <div class="intro-text">
+                <p>I design reusable Flutter platforms, engineering frameworks, and developer tooling that enable teams to build scalable enterprise applications.</p>
+                <p>Creator of Genie Coder — a configurable Flutter platform that generates production-ready Flutter applications from structured module definitions.</p>
+                <p>Author of 50+ public Dart & Flutter packages.</p>
+            </div>
+        </section>
 
-    <div class="divider"></div>
+        <!-- Stats Section -->
+        <section class="grid-4">
+            <div class="card stat-card">
+                <div class="stat-number">50+</div>
+                <div class="stat-label">Open Source Packages</div>
+            </div>
+            <div class="card stat-card">
+                <div class="stat-number">9+</div>
+                <div class="stat-label">Years Engineering</div>
+            </div>
+            <div class="card stat-card">
+                <div class="stat-number">7+</div>
+                <div class="stat-label">Years Flutter</div>
+            </div>
+            <div class="card stat-card">
+                <div class="stat-number">2</div>
+                <div class="stat-label">Enterprise Applications</div>
+            </div>
+        </section>
 
-    <div class="stats">
-      <div class="stat-item">
-        <span class="stat-number">50+</span>
-        <span class="stat-label">Pub Packages</span>
-      </div>
-      <div class="stat-item">
-        <span class="stat-number">9+</span>
-        <span class="stat-label">Years Experience</span>
-      </div>
-      <div class="stat-item">
-        <span class="stat-number">7+</span>
-        <span class="stat-label">Years Flutter</span>
-      </div>
-      <div class="stat-item">
-        <span class="stat-number">✨</span>
-        <span class="stat-label">Open Source Advocate</span>
-      </div>
-    </div>
+        <!-- Featured Work -->
+        <section>
+            <h3>Featured Work</h3>
+            <div style="display: flex; flex-direction: column; gap: 24px;">
+                <div class="card">
+                    <h4 style="font-size: 1.5rem; margin-bottom: 4px;">Genie Coder</h4>
+                    <p style="color: var(--accent); font-size: 0.9rem; margin-bottom: 16px;">Flutter Platform</p>
+                    <a href="genie.html" style="font-weight: 500;">Learn More →</a>
+                </div>
+                <div class="card">
+                    <h4 style="font-size: 1.5rem; margin-bottom: 4px;">Ape Kini</h4>
+                    <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 16px;">Enterprise Flutter App</p>
+                    <a href="projects.html" style="font-weight: 500;">View →</a>
+                </div>
+                <div class="card">
+                    <h4 style="font-size: 1.5rem; margin-bottom: 4px;">Bakir Hishab</h4>
+                    <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 16px;">Business Platform</p>
+                    <a href="projects.html" style="font-weight: 500;">View →</a>
+                </div>
+            </div>
+        </section>
 
-    <div class="links">
-      <a href="https://github.com/GenieCoderSrc" class="btn" target="_blank" rel="noopener noreferrer">
-        <svg viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
-        GitHub
-      </a>
+        <!-- Technology Section -->
+        <section>
+            <h3>Technology</h3>
+            <div class="flex-wrap">
+                <span class="badge">Flutter</span>
+                <span class="badge">Dart</span>
+                <span class="badge">Firebase</span>
+                <span class="badge">Firestore</span>
+                <span class="badge">Cloud Functions</span>
+                <span class="badge">REST</span>
+                <span class="badge">Clean Architecture</span>
+                <span class="badge">MVVM</span>
+                <span class="badge">BLoC</span>
+                <span class="badge">Cubit</span>
+                <span class="badge">GitHub Actions</span>
+                <span class="badge">Monorepo</span>
+            </div>
+        </section>
 
-      <a href="packages.html" class="btn">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
-        My Packages
-      </a>
+        <!-- Open Source Section -->
+        <section>
+            <h3>Open Source</h3>
+            <p style="color: var(--text-muted); margin-bottom: 24px;">50+ Packages</p>
+            <div class="grid-4" style="gap: 16px; margin-bottom: 32px;">
+                <div class="badge" style="text-align: center; padding: 12px; font-weight: 600;">Architecture</div>
+                <div class="badge" style="text-align: center; padding: 12px; font-weight: 600;">Backend</div>
+                <div class="badge" style="text-align: center; padding: 12px; font-weight: 600;">State Management</div>
+                <div class="badge" style="text-align: center; padding: 12px; font-weight: 600;">UI Systems</div>
+            </div>
+            <div class="grid-4" style="gap: 16px; margin-bottom: 32px;">
+                <div class="badge" style="text-align: center; padding: 12px; font-weight: 600;">Developer Tooling</div>
+            </div>
+            <a href="packages.html" class="btn btn-secondary">Explore →</a>
+        </section>
+    </main>
 
-      <a href="https://www.linkedin.com/in/shohidul-islam-576753219" class="btn" target="_blank" rel="noopener noreferrer">
-        <svg viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
-        LinkedIn
-      </a>
-
-      <a href="mailto:shohidul.exp@gmail.com" class="btn btn-primary">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-        Email Me
-      </a>
-    </div>
-
+    <!-- Footer -->
     <footer class="footer">
-      <a href="https://github.com/GenieCoderSrc" target="_blank" rel="noopener noreferrer">GenieCoderSrc</a> ·
-      Built with <span style="color:#ff4a4a;">❤</span> · Flutter · Dart
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <h4>Shohidul Islam</h4>
+                    <p>Mobile Application Architect &bull; Flutter Platform Engineer</p>
+                </div>
+                <div class="footer-links">
+                    <h5>Sitemap</h5>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="genie.html">Genie Coder</a></li>
+                        <li><a href="projects.html">Enterprise Apps</a></li>
+                        <li><a href="packages.html">Open Source</a></li>
+                        <li><a href="resume.html">Resume</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links">
+                    <h5>Connect</h5>
+                    <ul>
+                        <li><a href="https://github.com" target="_blank">GitHub</a></li>
+                        <li><a href="https://linkedin.com" target="_blank">LinkedIn</a></li>
+                        <li><a href="mailto:email@example.com">Email</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 Shohidul Islam. All rights reserved.</p>
+            </div>
+        </div>
     </footer>
 
-  </main>
+    <script src="assets/js/navigation.js"></script>
 </body>
 </html>
