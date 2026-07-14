@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise Apps - Shohidul Islam</title>
+    <link rel="stylesheet" href="assets/css/variables.css">
+    <link rel="stylesheet" href="assets/css/layout.css">
+    <link rel="stylesheet" href="assets/css/navbar.css">
+    <link rel="stylesheet" href="assets/css/cards.css">
+    <link rel="stylesheet" href="assets/css/buttons.css">
+    <link rel="stylesheet" href="assets/css/footer.css">
+    <link rel="stylesheet" href="assets/css/pages.css">
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="nav-logo">Shohidul Islam</a>
+            <button class="nav-toggle" aria-label="Toggle Navigation">☰</button>
+            <ul class="nav-menu">
+                <li><a href="index.html" class="nav-link">Home</a></li>
+                <li><a href="genie.html" class="nav-link">Genie Coder</a></li>
+                <li><a href="applications.html" class="nav-link active">Enterprise Apps</a></li>
+                <li><a href="open-source.html" class="nav-link">Open Source</a></li>
+                <li><a href="resume.html" class="nav-link">Resume</a></li>
+                <li><a href="https://github.com" target="_blank" class="nav-link">GitHub</a></li>
+                <li><a href="https://linkedin.com" target="_blank" class="nav-link">LinkedIn</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <header class="page-header">
+        <div class="container">
+            <h1>Enterprise Applications</h1>
+            <p>Production systems engineered for scalability, high concurrency, and architectural safety layers.</p>
+        </div>
+    </header>
+
+    <main class="container" style="padding-top: 48px; padding-bottom: 48px;">
+        <div class="doc-section" style="margin-bottom: 64px;">
+            <h2>Ape Kini</h2>
+            <div class="grid-2" style="margin-top: 24px; align-items: start;">
+                <div>
+                    <img src="assets/images/ape-kini.png" alt="Ape Kini Screenshot" class="project-img" onerror="this.style.display='none';">
+                    <div style="background: var(--bg-card); border: 1px dashed var(--border); height: 200px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; color: var(--text-muted); margin-bottom: 16px;">
+                        [ Ape Kini Mobile View Mockup ]
+                    </div>
+                </div>
+                <div>
+                    <h3 style="font-size: 1.25rem; margin-bottom: 8px;">Architecture</h3>
+                    <p>Built completely via Clean Architecture boundaries. Features pure layer splits separating independent state domains cleanly from external hardware devices and UI nodes, providing excellent protection against data leaks during background operations.</p>
+                    
+                    <h3 style="font-size: 1.25rem; margin-bottom: 8px; margin-top: 16px;">Technologies</h3>
+                    <div class="flex-wrap" style="margin-bottom: 24px;">
+                        <span class="badge">Flutter SDK</span>
+                        <span class="badge">BLoC</span>
+                        <span class="badge">Hive DB</span>
+                        <span class="badge">Chopper Client</span>
+                    </div>
+                    
+                    <a href="https://github.com" target="_blank" class="btn btn-secondary">View Source →</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="doc-section">
+            <h2>Bakir Hishab</h2>
+            <div class="grid-2" style="margin-top: 24px; align-items: start;">
+                <div>
+                    <img src="assets/images/bakir-hishab.png" alt="Bakir Hishab Screenshot" class="project-img" onerror="this.style.display='none';">
+                    <div style="background: var(--bg-card); border: 1px dashed var(--border); height: 200px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; color: var(--text-muted); margin-bottom: 16px;">
+                        [ Bakir Hishab Mobile View Mockup ]
+                    </div>
+                </div>
+                <div>
+                    <h3 style="font-size: 1.25rem; margin-bottom: 8px;">Architecture</h3>
+                    <p>Engineered for complex inventory environments. Leverages hierarchical transaction mapping paradigms, safe multi-outlet tracking pipelines, automated stock batch processing, and offline-first database structures to keep physical outposts updated synchronously.</p>
+                    
+                    <h3 style="font-size: 1.25rem; margin-bottom: 8px; margin-top: 16px;">Technologies</h3>
+                    <div class="flex-wrap" style="margin-bottom: 24px;">
+                        <span class="badge">Flutter Monorepo</span>
+                        <span class="badge">Cubit State</span>
+                        <span class="badge">Isar DB</span>
+                        <span class="badge">Dio HTTP</span>
+                    </div>
+                    
+                    <a href="https://github.com" target="_blank" class="btn btn-secondary">View Source →</a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-bottom">
+                <p>&copy; 2026 Shohidul Islam. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="assets/js/navigation.js"></script>
+</body>
+</html>
